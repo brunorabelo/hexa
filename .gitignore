@@ -1,0 +1,8 @@
+__pycache__
+lightning_logs
+checkpoints
+challenge.zip
+train.csv
+train_with_embeddings.csv
+env
+.ipynb_checkpoints
