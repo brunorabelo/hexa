@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-train_data = pd.read_csv("train.csv")
+train_data = pd.read_csv("data/train.csv")
 
 # new features
 train_data["url_count"] = train_data["urls"].apply(lambda s: s[1:-1].count("\'")/2)

@@ -1,1 +1,1 @@
-from linear_model import linear_model
+from linear_model import MLP
