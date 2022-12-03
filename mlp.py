@@ -36,9 +36,22 @@ class MLP(pl.LightningModule):
         self.log("val_loss", loss)
         return loss
 
+    # def configure_optimizers(self):
+    #     # optimizer = torch.optim.AdamW(self.parameters(), lr=1e-3, weight_decay=1e-4)
+    #     # optimizer = torch.optim.AdamW(self.parameters(), lr=1e-3)
+    #     optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+    #     return optimizer
+
     def configure_optimizers(self):
-        # optimizer = torch.optim.AdamW(self.parameters(), lr=1e-3, weight_decay=1e-4)
-        # optimizer = torch.optim.AdamW(self.parameters(), lr=1e-3)
         optimizer = torch.optim.Adam(self.parameters())
-        return optimizer
+        # optimizer = torch.optim.AdamW(self.parameters(), lr=1e-3)
+        # lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
+        # lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
+        lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.5)
+        opt = {
+            'optimizer': optimizer,
+            'lr_scheduler': lr_scheduler
+        }
+
+        return opt
     
