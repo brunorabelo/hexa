@@ -6,3 +6,5 @@ train.csv
 train_with_embeddings.csv
 env
 .ipynb_checkpoints
+/venv
+.idea
