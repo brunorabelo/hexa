@@ -8,3 +8,5 @@ env
 .ipynb_checkpoints
 /venv
 .idea
+/data
+models/evaluation.csv
