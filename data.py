@@ -2,7 +2,6 @@ import re
 from datetime import datetime
 
 import spacy
-from pylexique import Lexique383
 
 
 def get_stopwords_list(path):
@@ -43,19 +42,18 @@ def preprocess(
         df["Melenchon"] = df["text"].apply(lambda s: ("melenchon" in s.replace("é", "e").lower().split()))
         df["rt"] = df["text"].apply(lambda s: ("rt" in s.lower().split()))
     if clean_text:
+        stopwords = get_stopwords_list('data/stopwords-fr.txt')
         df['text'] = df['text'].apply(
-            lambda s: clean_text_func(s, lower=lower, stopwords=get_stopwords_list('data/stopwords-fr.txt')))
+            lambda s: clean_text_func(s, lower=lower, stopwords=stopwords))
     return df
-LEXIQUE = Lexique383()
 
-def count_abreviations_func(text):
-    all_vocabs = set(LEXIQUE.lexique.keys())
+
+def count_abreviations_func(text, all_vocabs=None):
+    if not all_vocabs:
+        return
     all_words = text.split(' ')
     abbrevitations = [x for x in all_words if 0 <= len(x) <= 3 and x.isalpha() and x not in all_vocabs]
-    return len(abbrevitations)/len(all_words)
-
-
-count_abreviations_func('et voiture bth b3 32')
+    return len(abbrevitations) / len(all_words)
 
 
 def clean_text_func(text, lower=True, stem=False, stopwords=[]):
