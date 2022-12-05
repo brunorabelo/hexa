@@ -1,7 +1,11 @@
 import re
 from datetime import datetime
 
+from spacy.lang.fr.stop_words import STOP_WORDS
 import spacy
+from pylexique import Lexique383
+from textblob import Blobber
+from textblob_fr import PatternTagger, PatternAnalyzer
 
 
 def get_stopwords_list(path):
@@ -18,12 +22,42 @@ def get_stopwords_list(path):
     return data_into_list
 
 
+def feature_abbrev(df):
+    LEXIQUE = Lexique383()
+    lexique = set(LEXIQUE.lexique.keys())
+    df["abrev"] = df["text"].apply(lambda s: count_abreviations_func(s, lexique))
+    return df
+
+
+def feature_delete_stop_words(df, column="text_without_stopwords"):
+    stop_words = set(STOP_WORDS)
+    deselect_stop_words = ['n\'', 'ne', 'pas', 'plus', 'personne', 'aucun', 'ni', 'aucune', 'rien']
+    for w in deselect_stop_words:
+        if w in stop_words:
+            stop_words.remove(w)
+        else:
+            continue
+
+    df[column] = df['text_arr'].apply(
+        lambda s: " ".join([w for w in s if not ((w in stop_words) or (len(w) == 1))]))
+    return df
+
+
+def feature_words_arr(df):
+    df['text_arr'] = df['text'].apply(lambda s: re.sub("\W", " ", s).split())
+    return df
+
+
+def feature_sent_analysis(df, column='text'):
+    tb = Blobber(pos_tagger=PatternTagger(), analyzer=PatternAnalyzer())
+    df["polarity"] = df[column].apply(lambda s: tb(s).sentiment[0])
+    df["subjectivity"] = df[column].apply(lambda s: tb(s).sentiment[1])
+    return df
+
+
 def preprocess(
         df,
-        count_abreviations=False,
-        create_keywords=False,
-        lower=False,
-        clean_text=False
+        create_keywords=False
 ):
     df["url_count"] = df["urls"].apply(lambda s: s[1:-1].count("\'") / 2)
     df["text_len"] = df["text"].apply(lambda s: len(s))
@@ -31,20 +65,12 @@ def preprocess(
     df["day"] = df["timestamp"].apply(lambda t: datetime.utcfromtimestamp(t / 1000).day)
     df["hour"] = df["timestamp"].apply(lambda t: datetime.utcfromtimestamp(t / 1000).hour)
 
-    if count_abreviations:
-        df["abrev"] = df["text"].apply(lambda s: count_abreviations_func(s))
-    if lower:
-        df['text'] = df['text'].str.lower()
     # create keywords
     if create_keywords:
         df["Macron"] = df["text"].apply(lambda s: ("macron" in s.lower().split()))
         df["Zemmour"] = df["text"].apply(lambda s: ("zemmour" in s.lower().split()))
         df["Melenchon"] = df["text"].apply(lambda s: ("melenchon" in s.replace("é", "e").lower().split()))
         df["rt"] = df["text"].apply(lambda s: ("rt" in s.lower().split()))
-    if clean_text:
-        stopwords = get_stopwords_list('data/stopwords-fr.txt')
-        df['text'] = df['text'].apply(
-            lambda s: clean_text_func(s, lower=lower, stopwords=stopwords))
     return df
 
 
